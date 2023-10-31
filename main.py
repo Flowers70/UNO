@@ -32,6 +32,12 @@ class MyGame(arcade.Window):
         # Create a list of lists, each holds a pile of cards.
         self.piles = None
 
+        # CPU hand (contains all cards in cpu's hand)
+        self.cpu_hand = Uno_Card.Hand()
+
+        # Players' hand (contains all cards in player's hand)
+        self.player_hand = Uno_Card.Hand()
+
         # # Create UNO! Button
         # self.button = arcade.gui.UIFlatButton("UNO!")
 
@@ -111,6 +117,8 @@ class MyGame(arcade.Window):
             card = self.piles[C.BOTTOM_FACE_DOWN_PILE].pop()
             # Put in the proper pile
             self.piles[pile_no].append(card)
+            # Put in player's hand
+            self.player_hand.add_card(card)
             # Move card to same position as pile we just put it in
             card.position = self.pile_mat_list[pile_no].position
             # Put on top in draw order
@@ -140,10 +148,27 @@ class MyGame(arcade.Window):
             card = self.piles[C.BOTTOM_FACE_DOWN_PILE].pop()
             # Put in the proper pile
             self.piles[pile_no].append(card)
+            # Put in CPU's hand
+            self.cpu_hand.add_card(card)
             # Move card to same position as pile we just put it in
             card.position = self.pile_mat_list[pile_no].position
             # Put on top in draw order
             self.pull_to_top(card)
+
+        # Flip up the top cards
+        for i in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
+            self.piles[i][-1].face_up()
+
+        print("Beginning CPU Hand:")
+        for card in self.cpu_hand.cards:
+            print(card.colors, card.type, card.points, end=", ")
+        print()
+        print("Beginning Player Hand:")
+        for card in self.player_hand.cards:
+            print(card.colors, card.type, card.points, end=", ")
+        print()
+        print()
+        print()
 
     def on_draw(self):
         """ Render the screen. """
@@ -180,18 +205,15 @@ class MyGame(arcade.Window):
 
         # Have we clicked on a card?
         if len(cards) > 0:
-            print("Clicked on a card")
             # Might be a stack of cards, get the top one
             primary_card = cards[-1]
             assert isinstance(primary_card, Uno_Card.Card)
 
             # Figure out what pile the card is in
             pile_index = self.get_pile_for_card(primary_card)
-            print("Clicked Card Index:", pile_index)
 
             # Are we clicking on the bottom deck, to flip one card
             if pile_index == C.BOTTOM_FACE_DOWN_PILE:
-                print("Clicking on bottom deck to flip one card")
                 # Flip one cards
                 for i in range(1):
                     # If we ran out of cards, stop
@@ -207,6 +229,8 @@ class MyGame(arcade.Window):
                     self.piles[C.BOTTOM_FACE_DOWN_PILE].remove(card)
                     # Move card to face up list
                     self.piles[C.PLAY_PILE_1].append(card)  # Modified
+                    # Add card to player's hand
+                    self.player_hand.add_card(card)
                     # Put on top draw-order wise
                     self.pull_to_top(card)
 
@@ -252,10 +276,18 @@ class MyGame(arcade.Window):
 
     def remove_card_from_pile(self, card):
         """ Remove card from whatever pile it was in. """
+        index = 0
         for pile in self.piles:
             if card in pile:
                 pile.remove(card)
+
+                if 1 <= index <= 7:
+                    self.player_hand.remove_card(card)
+                elif index <= 14:
+                    self.cpu_hand.remove_card(card)
+
                 break
+            index += 1
 
     def get_pile_for_card(self, card):
         """ What pile is this card in? """
@@ -267,10 +299,19 @@ class MyGame(arcade.Window):
         """ Move the card to a new pile """
         self.remove_card_from_pile(card)
         self.piles[pile_index].append(card)
-        print("Index:", pile_index)
-        print(len(self.piles[C.DISCARD_PILE]))
+        if 1 <= pile_index <= 7:
+            self.player_hand.add_card(card)
+        elif 8 <= pile_index <= 14:
+            self.cpu_hand.add_card(card)
+        print("CPU's Hand:")
+        for cpu_card in self.cpu_hand.cards:
+            print(cpu_card.colors, cpu_card.type, cpu_card.points, end=", ")
         print()
-
+        print("Player's Hand:")
+        for player_card in self.player_hand.cards:
+            print(player_card.colors, player_card.type, player_card.points, end=", ")
+        print()
+        print()
 
     def on_mouse_release(self, x: float, y: float, button: int,
                          modifiers: int):

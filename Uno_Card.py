@@ -35,6 +35,24 @@ class Card(arcade.Sprite):
         self.texture = arcade.load_texture(self.image_file_name)
         self.is_face_up = True
 
+    def type_value(self, num_of_players):
+        if self.points < 10:
+            return 1
+        elif self.type == "Wild":
+            return 2
+        elif self.type == "Draw4":
+            return 3
+        elif num_of_players == 2:
+            if self.type == "Draw2":
+                return 2
+            else:
+                return 3
+        else:
+            if self.type == "Draw2":
+                return 3
+            else:
+                return 2
+
     @property
     def is_face_down(self):
         """ Is this card face down? """
@@ -79,3 +97,65 @@ def create_every_card(storage_list):  # We created this
         storage_list.append(card2)
 
 
+class Hand():
+    def __init__(self):
+        self.cards = list()
+        self.amount = 0
+        self.red = 0
+        self.green = 0
+        self.blue = 0
+        self.yellow = 0
+        self.maxPoints = 0
+        self.maxType = 0
+
+    def add_card(self, card):
+        self.cards.append(card)
+        self.amount += 1
+
+        if card.points > self.maxPoints:
+            self.maxPoints = card.points
+
+        if card.type_value(2) > self.maxType:
+            self.maxType = card.type_value(2)
+
+        if card.colors == "red":
+            self.red += 1
+        elif card.colors == "green":
+            self.green += 1
+        elif card.colors == "blue":
+            self.blue += 1
+        elif card.colors == "yellow":
+            self.yellow += 1
+
+    def remove_card(self, card):
+        if card in self.cards:
+            self.amount -= 1
+            self.cards.remove(card)
+
+            if card.points == self.maxPoints:
+                self.maxPoints = 0
+                for hand_card in self.cards:
+                    if hand_card.points > self.maxPoints:
+                        self.maxPoints = hand_card.points
+
+            if card.type_value(2) == self.maxType:
+                self.maxType = 0
+                for hand_card in self.cards:
+                    if hand_card.type_value(2) > self.maxType:
+                        self.maxType = hand_card.type_value(2)
+
+            if card.colors == "red":
+                self.red -= 1
+            elif card.colors == "green":
+                self.green -= 1
+            elif card.colors == "blue":
+                self.blue -= 1
+            elif card.colors == "yellow":
+                self.yellow -= 1
+
+    def card_amount(self):
+        return self.amount
+
+    def get_max_color(self):
+        max_value = max(self.red, self.blue, self.yellow, self.green)
+        return max_value
