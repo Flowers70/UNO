@@ -2,6 +2,7 @@ from typing import Optional
 
 import random
 import arcade
+import arcade.gui
 import Constants as C
 import Uno_Card
 
@@ -10,12 +11,12 @@ class MyGame(arcade.Window):
     """ Main application class. """
 
     def __init__(self):
+
         super().__init__(C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.SCREEN_TITLE)
 
         # Sprite list with all the cards, no matter what pile they are in.
         self.card_list: Optional[arcade.SpriteList] = None
 
-        #arcade.set_background_color(arcade.color.AMAZON)
         self.background = None
 
         # List of cards we are dragging with the mouse
@@ -30,6 +31,12 @@ class MyGame(arcade.Window):
 
         # Create a list of lists, each holds a pile of cards.
         self.piles = None
+
+        # # Create UNO! Button
+        # self.button = arcade.gui.UIFlatButton("UNO!")
+
+        # Create the buttons
+        self.button = arcade.gui.UIFlatButton(800, 450, 200, 10, "UNO!")
 
     def setup(self):
         """ Set up the game here. Call this function to restart the game. """
@@ -49,25 +56,30 @@ class MyGame(arcade.Window):
 
         # Create the mats for the bottom face down and face up piles
         pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
-        pile.position = C.START_X, C.BOTTOM_Y # MIDDLE USED TO BE BOTTOM
+        # pile.position = C.START_X, C.BOTTOM_Y # MIDDLE USED TO BE BOTTOM
+        pile.position = C.START_X + 4 * C.X_SPACING, C.MIDDLE_Y
+        print("Bottom Face Down - Index:", len(self.pile_mat_list))
         self.pile_mat_list.append(pile)
 
         # Create seven piles for a player (Bottom)
         for i in range(7):
             pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
             pile.position = C.START_X + i * C.X_SPACING, C.BOTTOM_Y
+            print("Player (Bottom) - Index:", len(self.pile_mat_list))
             self.pile_mat_list.append(pile)
 
         # Seven piles for CPU (Top)
         for i in range(7):
             pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
             pile.position = C.START_X + i * C.X_SPACING, C.TOP_Y
+            print("CPU (Top) - Index:", len(self.pile_mat_list))
             self.pile_mat_list.append(pile)
 
         # Create the discard pile
         for i in range(1):
             pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
             pile.position = C.START_X + 3 * C.X_SPACING, C.MIDDLE_Y
+            print("Discard Pile - Index:", len(self.pile_mat_list))
             self.pile_mat_list.append(pile)
 
         # --- Create, shuffle, and deal the cards
@@ -107,6 +119,19 @@ class MyGame(arcade.Window):
         # Flip up the top cards
         for i in range(C.PLAY_PILE_1, C.PLAY_PILE_7 + 1):
             self.piles[i][-1].face_up()
+
+        # Beginning face up card to play off of
+        card = self.piles[C.BOTTOM_FACE_DOWN_PILE].pop()
+
+        self.piles[C.DISCARD_PILE].append(card)
+        card.position = self.pile_mat_list[C.DISCARD_PILE].position
+        print("Discard Pile Card:", self.piles[C.DISCARD_PILE][-1])
+        print("Cards on discard pile:", len(self.piles[C.DISCARD_PILE]))
+
+        self.pull_to_top(card)
+
+        self.piles[C.DISCARD_PILE][-1].face_up()
+
 
         for pile_no in range(C.TOP_PILE_1, C.TOP_PILE_7+1):
             # Deal proper number of cards for that pile
@@ -155,18 +180,20 @@ class MyGame(arcade.Window):
 
         # Have we clicked on a card?
         if len(cards) > 0:
-
+            print("Clicked on a card")
             # Might be a stack of cards, get the top one
             primary_card = cards[-1]
             assert isinstance(primary_card, Uno_Card.Card)
 
             # Figure out what pile the card is in
             pile_index = self.get_pile_for_card(primary_card)
+            print("Clicked Card Index:", pile_index)
 
-            # Are we clicking on the bottom deck, to flip three cards?
+            # Are we clicking on the bottom deck, to flip one card
             if pile_index == C.BOTTOM_FACE_DOWN_PILE:
-                # Flip three cards
-                for i in range(3):
+                print("Clicking on bottom deck to flip one card")
+                # Flip one cards
+                for i in range(1):
                     # If we ran out of cards, stop
                     if len(self.piles[C.BOTTOM_FACE_DOWN_PILE]) == 0:
                         break
@@ -175,18 +202,19 @@ class MyGame(arcade.Window):
                     # Flip face up
                     card.face_up()
                     # Move card position to bottom-right face up pile
-                    card.position = self.pile_mat_list[C.BOTTOM_FACE_UP_PILE].position
+                    card.position = self.pile_mat_list[C.PLAY_PILE_1].position  # Modified
                     # Remove card from face down pile
                     self.piles[C.BOTTOM_FACE_DOWN_PILE].remove(card)
                     # Move card to face up list
-                    self.piles[C.BOTTOM_FACE_UP_PILE].append(card)
+                    self.piles[C.PLAY_PILE_1].append(card)  # Modified
                     # Put on top draw-order wise
                     self.pull_to_top(card)
 
             elif primary_card.is_face_down:
                 # Is the card face down? In one of those bottom 7 piles? Then flip up
-                if pile_index not in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
-                    primary_card.face_up()
+                # if pile_index not in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
+                #     primary_card.face_up()
+                primary_card.face_up()
             else:
                 # All other cases, grab the face-up card we are clicking on
                 self.held_cards = [primary_card]
@@ -215,10 +243,10 @@ class MyGame(arcade.Window):
                 # Is it our turned over flip mat? and no cards on it?
                 if mat_index == C.BOTTOM_FACE_DOWN_PILE and len(self.piles[C.BOTTOM_FACE_DOWN_PILE]) == 0:
                     # Flip the deck back over so we can restart
-                    temp_list = self.piles[C.BOTTOM_FACE_UP_PILE].copy()
+                    temp_list = self.piles[C.DISCARD_PILE].copy()  # Modified
                     for card in reversed(temp_list):
                         card.face_down()
-                        self.piles[C.BOTTOM_FACE_UP_PILE].remove(card)
+                        self.piles[C.DISCARD_PILE].remove(card)  # Modified
                         self.piles[C.BOTTOM_FACE_DOWN_PILE].append(card)
                         card.position = self.pile_mat_list[C.BOTTOM_FACE_DOWN_PILE].position
 
@@ -239,6 +267,10 @@ class MyGame(arcade.Window):
         """ Move the card to a new pile """
         self.remove_card_from_pile(card)
         self.piles[pile_index].append(card)
+        print("Index:", pile_index)
+        print(len(self.piles[C.DISCARD_PILE]))
+        print()
+
 
     def on_mouse_release(self, x: float, y: float, button: int,
                          modifiers: int):
@@ -288,6 +320,16 @@ class MyGame(arcade.Window):
 
             # Release on top play pile? And only one card held?
             elif C.TOP_PILE_1 <= pile_index <= C.TOP_PILE_7 and len(self.held_cards) == 1:
+                # Move position of card to pile
+                self.held_cards[0].position = pile.position
+                # Move card to card list
+                for card in self.held_cards:
+                    self.move_card_to_new_pile(card, pile_index)
+
+                reset_position = False
+
+            # The following elif contains our own custom code
+            elif pile_index == 15: # Make it so a user can play their card in the face up pile
                 # Move position of card to pile
                 self.held_cards[0].position = pile.position
                 # Move card to card list
