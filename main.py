@@ -39,6 +39,9 @@ class MyGame(arcade.Window):
         # Players' hand (contains all cards in player's hand)
         self.player_hand = Uno_Card.Hand()
 
+        # Deck
+        self.deck = Uno_Card.Hand()
+
         # # Create UNO! Button
         # self.button = arcade.gui.UIFlatButton("UNO!")
 
@@ -65,28 +68,24 @@ class MyGame(arcade.Window):
         pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
         # pile.position = C.START_X, C.BOTTOM_Y # MIDDLE USED TO BE BOTTOM
         pile.position = C.START_X + 4 * C.X_SPACING, C.MIDDLE_Y
-        print("Bottom Face Down - Index:", len(self.pile_mat_list))
         self.pile_mat_list.append(pile)
 
         # Create seven piles for a player (Bottom)
         for i in range(7):
             pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
             pile.position = C.START_X + i * C.X_SPACING, C.BOTTOM_Y
-            print("Player (Bottom) - Index:", len(self.pile_mat_list))
             self.pile_mat_list.append(pile)
 
         # Seven piles for CPU (Top)
         for i in range(7):
             pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
             pile.position = C.START_X + i * C.X_SPACING, C.TOP_Y
-            print("CPU (Top) - Index:", len(self.pile_mat_list))
             self.pile_mat_list.append(pile)
 
         # Create the discard pile
         for i in range(1):
             pile = arcade.SpriteSolidColor(C.MAT_WIDTH, C.MAT_HEIGHT, arcade.csscolor.BLACK)
             pile.position = C.START_X + 3 * C.X_SPACING, C.MIDDLE_Y
-            print("Discard Pile - Index:", len(self.pile_mat_list))
             self.pile_mat_list.append(pile)
 
         # --- Create, shuffle, and deal the cards
@@ -108,6 +107,7 @@ class MyGame(arcade.Window):
         # Put all the cards in the bottom face-down pile
         for card in self.card_list:
             self.piles[C.BOTTOM_FACE_DOWN_PILE].append(card)
+            self.deck.add_card(card)
 
         # - Pull from that pile into the bottom piles, all face-down
         # Loop for each pile
@@ -116,6 +116,7 @@ class MyGame(arcade.Window):
             # for j in range(pile_no - PLAY_PILE_1 + 1):
             # Pop the card off the deck we are dealing from
             card = self.piles[C.BOTTOM_FACE_DOWN_PILE].pop()
+            self.deck.remove_card(card)
             # Put in the proper pile
             self.piles[pile_no].append(card)
             # Put in player's hand
@@ -131,6 +132,7 @@ class MyGame(arcade.Window):
 
         # Beginning face up card to play off of
         card = self.piles[C.BOTTOM_FACE_DOWN_PILE].pop()
+        self.deck.remove_card(card)
 
         self.piles[C.DISCARD_PILE].append(card)
         card.position = self.pile_mat_list[C.DISCARD_PILE].position
@@ -141,12 +143,12 @@ class MyGame(arcade.Window):
 
         self.piles[C.DISCARD_PILE][-1].face_up()
 
-
         for pile_no in range(C.TOP_PILE_1, C.TOP_PILE_7+1):
             # Deal proper number of cards for that pile
             # for j in range(pile_no - PLAY_PILE_1 + 1):
             # Pop the card off the deck we are dealing from
             card = self.piles[C.BOTTOM_FACE_DOWN_PILE].pop()
+            self.deck.remove_card(card)
             # Put in the proper pile
             self.piles[pile_no].append(card)
             # Put in CPU's hand
@@ -160,6 +162,9 @@ class MyGame(arcade.Window):
         for i in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
             self.piles[i][-1].face_up()
 
+        print("Discard")
+        discard_card = self.piles[C.DISCARD_PILE][-1]
+        print(discard_card.colors, discard_card.type, discard_card.points)
         print("Beginning CPU Hand:")
         for card in self.cpu_hand.cards:
             print(card.colors, card.type, card.points, end=", ")
@@ -169,6 +174,14 @@ class MyGame(arcade.Window):
             print(card.colors, card.type, card.points, end=", ")
         print()
         print()
+
+        cpu_choice = Game_Logic.cpu_select(self.piles[C.DISCARD_PILE][-1], self.cpu_hand, self.deck)
+        print("CPU Chose")
+        print(cpu_choice[0].colors, cpu_choice[0].type, cpu_choice[0].points)
+
+        for card in cpu_choice[1]:
+            self.draw_card(False)
+
         print()
 
     def on_draw(self):
@@ -216,24 +229,7 @@ class MyGame(arcade.Window):
             # Are we clicking on the bottom deck, to flip one card
             if pile_index == C.BOTTOM_FACE_DOWN_PILE:
                 # Flip one cards
-                for i in range(1):
-                    # If we ran out of cards, stop
-                    if len(self.piles[C.BOTTOM_FACE_DOWN_PILE]) == 0:
-                        break
-                    # Get top card
-                    card = self.piles[C.BOTTOM_FACE_DOWN_PILE][-1]
-                    # Flip face up
-                    card.face_up()
-                    # Move card position to bottom-right face up pile
-                    card.position = self.pile_mat_list[C.PLAY_PILE_1].position  # Modified
-                    # Remove card from face down pile
-                    self.piles[C.BOTTOM_FACE_DOWN_PILE].remove(card)
-                    # Move card to face up list
-                    self.piles[C.PLAY_PILE_1].append(card)  # Modified
-                    # Add card to player's hand
-                    self.player_hand.add_card(card)
-                    # Put on top draw-order wise
-                    self.pull_to_top(card)
+                self.draw_card()
 
             elif primary_card.is_face_down:
                 # Is the card face down? In one of those bottom 7 piles? Then flip up
@@ -273,6 +269,7 @@ class MyGame(arcade.Window):
                         card.face_down()
                         self.piles[C.DISCARD_PILE].remove(card)  # Modified
                         self.piles[C.BOTTOM_FACE_DOWN_PILE].append(card)
+                        self.deck.add_card(card)
                         card.position = self.pile_mat_list[C.BOTTOM_FACE_DOWN_PILE].position
 
     def remove_card_from_pile(self, card):
@@ -312,6 +309,7 @@ class MyGame(arcade.Window):
         for player_card in self.player_hand.cards:
             print(player_card.colors, player_card.type, player_card.points, end=", ")
         print()
+        print("Position:", card.position)
         print()
 
     def on_mouse_release(self, x: float, y: float, button: int,
@@ -396,6 +394,33 @@ class MyGame(arcade.Window):
         for card in self.held_cards:
             card.center_x += dx
             card.center_y += dy
+
+    def draw_card(self, player_hand=True):
+        # Get top card
+        card = self.piles[C.BOTTOM_FACE_DOWN_PILE][-1]
+        # Flip face up
+        card.face_up()
+        if player_hand:
+            # Move card position to bottom-right face up pile
+            card.position = self.pile_mat_list[C.PLAY_PILE_1].position  # Modified
+        else:
+            card.position = self.pile_mat_list[C.TOP_PILE_1].position
+        # Remove card from face down pile
+        self.piles[C.BOTTOM_FACE_DOWN_PILE].remove(card)
+        self.deck.remove_card(card)
+        if player_hand:
+            # Move card to face up list
+            self.piles[C.PLAY_PILE_1].append(card)  # Modified
+            # Add card to player's hand
+            self.player_hand.add_card(card)
+        else:
+            # Move card to face up list
+            self.piles[C.TOP_PILE_1].append(card)  # Modified
+            # Add card to player's hand
+            self.cpu_hand.add_card(card)
+
+        # Put on top draw-order wise
+        self.pull_to_top(card)
 
 
 def main():

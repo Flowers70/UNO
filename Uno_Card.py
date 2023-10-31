@@ -118,13 +118,13 @@ class Hand():
         if card.type_value(2) > self.maxType:
             self.maxType = card.type_value(2)
 
-        if card.colors == "red":
+        if card.colors == "Red":
             self.red += 1
-        elif card.colors == "green":
+        elif card.colors == "Green":
             self.green += 1
-        elif card.colors == "blue":
+        elif card.colors == "Blue":
             self.blue += 1
-        elif card.colors == "yellow":
+        elif card.colors == "Yellow":
             self.yellow += 1
 
     def remove_card(self, card):
@@ -144,13 +144,13 @@ class Hand():
                     if hand_card.type_value(2) > self.maxType:
                         self.maxType = hand_card.type_value(2)
 
-            if card.colors == "red":
+            if card.colors == "Red":
                 self.red -= 1
-            elif card.colors == "green":
+            elif card.colors == "Green":
                 self.green -= 1
-            elif card.colors == "blue":
+            elif card.colors == "Blue":
                 self.blue -= 1
-            elif card.colors == "yellow":
+            elif card.colors == "Yellow":
                 self.yellow -= 1
 
     def card_amount(self):
