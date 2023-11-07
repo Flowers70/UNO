@@ -102,8 +102,8 @@ class MyGame(Pile_Actions.PileActions):
 
         self.piles[C.DISCARD_PILE].append(card)
         card.position = self.pile_mat_list[C.DISCARD_PILE].position
-        print("Discard Pile Card:", self.piles[C.DISCARD_PILE][-1])
-        print("Cards on discard pile:", len(self.piles[C.DISCARD_PILE]))
+        # print("Discard Pile Card:", self.piles[C.DISCARD_PILE][-1])
+        # print("Cards on discard pile:", len(self.piles[C.DISCARD_PILE]))
 
         self.pull_to_top(card)
 
@@ -125,9 +125,11 @@ class MyGame(Pile_Actions.PileActions):
             # Put on top in draw order
             self.pull_to_top(card)
 
-        # Flip up the top cards
-        for i in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
-            self.piles[i][-1].face_up()
+        # # Flip up the top cards
+        # for i in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
+        #     self.piles[i][-1].face_up()
+
+
 
     def on_draw(self):
         """ Render the screen. """

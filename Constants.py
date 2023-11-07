@@ -45,7 +45,7 @@ CARD_TYPES = [["Wild", "Draw4"], ["Draw2", "Reverse", "Skip"], ["Normal"]]
 CARD_VERTICAL_OFFSET = CARD_HEIGHT * CARD_SCALE * 0.3
 
 # Face down image
-#FACE_DOWN_IMAGE = ":resources:images/cards/cardBack_red2.png"
+# FACE_DOWN_IMAGE = ":resources:images/cards/cardBack_red2.png"
 FACE_DOWN_IMAGE = "venv/Lib/Uno_cards/uno_back.png"
 
 # Constants that represent "what pile is what" for the game

@@ -61,7 +61,6 @@ class MouseActions(arcade.Window):
                 # Determine if it is the cpu's turn or the players
                 # If it is the player's turn no cards should be moved from the cpu's hand
                 if self.player_turn and pile_index not in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
-                    # All other cases, grab the face-up card we are clicking on
                     self.held_cards = [primary_card]
                     # Save the position
                     self.held_cards_original_position = [self.held_cards[0].position]
@@ -185,8 +184,10 @@ class MouseActions(arcade.Window):
                 reset_draw_pile = True
             # Get top card
             card = self.piles[C.BOTTOM_FACE_DOWN_PILE][-1]
-            # Flip face up
-            card.face_up()
+            if player_hand:
+                # Flip face up
+                card.face_up()
+
             if player_hand:
                 # Move card position to bottom-right face up pile
                 card.position = self.pile_mat_list[C.PLAY_PILE_1].position  # Modified

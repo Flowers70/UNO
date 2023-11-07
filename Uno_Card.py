@@ -159,8 +159,8 @@ class Hand():
                     self.yellow -= 1
 
                 break
-        if not card_found:
-            print("Card never found")
+        # if not card_found:
+        #     print("Card never found")
 
     def card_amount(self):
         return self.amount

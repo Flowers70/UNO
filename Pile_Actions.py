@@ -1,3 +1,5 @@
+import arcade
+
 import Mouse_Actions
 import Constants as C
 import Game_Logic
@@ -29,7 +31,6 @@ class PileActions(Mouse_Actions.MouseActions):
             move_to_discard = True
 
             if card.type != "Skip" and card.type != "Reverse" and card.type != "Draw2" and card.type != "Draw4":
-                print("Change Turn", card.type)
                 self.player_turn = not self.player_turn
 
             if card.type == "Draw4":
@@ -57,24 +58,59 @@ class PileActions(Mouse_Actions.MouseActions):
             self.reuse_cards()
 
         if not self.player_turn and pile_index == C.DISCARD_PILE:
-            # Something not working when playing a card (still in hand - specifically draw4)
             deck = self.piles[C.BOTTOM_FACE_DOWN_PILE]
             face_up = self.piles[C.DISCARD_PILE][-1]
             while Game_Logic.is_playable(face_up, self.cpu_hand).amount < 1:
                 self.draw_card(False)
 
             cpu_choice = Game_Logic.cpu_select(self.piles[C.DISCARD_PILE][-1], self.cpu_hand, deck[:])
-            print("CPU Chose")
-            print(cpu_choice[0].colors, cpu_choice[0].type, cpu_choice[0].points)
+            face_up_currently = self.piles[C.DISCARD_PILE][-1]
+            # print("Face up:", face_up_currently.colors, face_up_currently.type, face_up_currently.points)
+            # print("CPU Chose:", end=" ")
+            # print(cpu_choice[0].colors, cpu_choice[0].type, cpu_choice[0].points)
+            # print()
             cpu_card = cpu_choice[0]
 
             for card in cpu_choice[1]:
                 self.draw_card(False, True)
 
+            cpu_wild = False
+
+            # Determining a color when card is a wild
+            if cpu_card.colors == "Wild":
+                cpu_wild = True
+                if self.cpu_hand.red == self.cpu_hand.get_max_color():
+                    cpu_card.colors = "Red"
+                elif self.cpu_hand.green == self.cpu_hand.get_max_color():
+                    cpu_card.colors = "Green"
+                elif self.cpu_hand.blue == self.cpu_hand.get_max_color():
+                    cpu_card.colors = "Blue"
+                else:
+                    cpu_card.colors = "Yellow"
+
+            # Implementing logic so CPU automatically plays the card selected
+            pile_index_cpu_choice = self.get_pile_for_card(cpu_card)
+
+            cpu_pile = self.piles[pile_index_cpu_choice]
+            index_of_card = 0
+            for i in range(len(cpu_pile)):
+                if cpu_wild and cpu_pile[i].colors == "Wild" or cpu_pile[i].colors == cpu_card.colors:
+                    index_of_card = i
+
+            cpu_card_position = self.pile_mat_list[pile_index_cpu_choice].position
+            cards = arcade.get_sprites_at_point(cpu_card_position, self.card_list)
+            cards[index_of_card].position = (358.8, 290.625)
+            self.pull_to_top(cards[index_of_card])
+            self.move_card_to_new_pile(cards[index_of_card], C.DISCARD_PILE)
+            self.piles[C.DISCARD_PILE][-1].face_up()
+            # print("CPU Hand:", end=" ")
+            # for cpu_card2 in self.cpu_hand.cards:
+            #     print(cpu_card2.colors, cpu_card2.type, cpu_card2.points, end=", ")
+            # print()
+
     def move_to_discard(self, pile_index, pile):
         play_card = Uno_Card.Hand()
         play_card.add_card(self.held_cards[0])
-        print("Color Compare:", self.piles[C.DISCARD_PILE][-1].colors, self.held_cards[0].colors)
         playable = Game_Logic.is_playable(self.piles[C.DISCARD_PILE][-1], play_card)
 
         if len(playable.cards) > 0:
