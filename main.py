@@ -11,16 +11,9 @@ class MyGame(Pile_Actions.PileActions):
 
     def __init__(self):
 
-        # super().__init__(C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.SCREEN_TITLE)
         Pile_Actions.PileActions.__init__(self)
 
-        # # Sprite list with all the cards, no matter what pile they are in.
-        # self.card_list: Optional[arcade.SpriteList] = None
-
         self.background = None
-
-        # Create the buttons
-        self.button = arcade.gui.UIFlatButton(800, 450, 200, 10, "UNO!")
 
     def setup(self):
         """ Set up the game here. Call this function to restart the game. """

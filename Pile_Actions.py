@@ -11,6 +11,7 @@ class PileActions(Mouse_Actions.MouseActions):
         for pile in self.piles:
             if card in pile:
                 pile.remove(card)
+
                 if 1 <= index <= 7:
                     self.player_hand.remove_card(card)
                 elif index <= 14 and is_discarded:
