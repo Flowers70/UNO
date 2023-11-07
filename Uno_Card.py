@@ -128,30 +128,39 @@ class Hand():
             self.yellow += 1
 
     def remove_card(self, card):
-        if card in self.cards:
-            self.amount -= 1
-            self.cards.remove(card)
+        card_found = False
 
-            if card.points == self.maxPoints:
-                self.maxPoints = 0
-                for hand_card in self.cards:
-                    if hand_card.points > self.maxPoints:
-                        self.maxPoints = hand_card.points
+        for hand_card in range(len(self.cards)):
+            if (self.cards[hand_card].colors == card.colors and
+            self.cards[hand_card].type == card.type and
+            self.cards[hand_card].points == card.points):
+                card_found = True
+                del self.cards[hand_card]
 
-            if card.type_value(2) == self.maxType:
-                self.maxType = 0
-                for hand_card in self.cards:
-                    if hand_card.type_value(2) > self.maxType:
-                        self.maxType = hand_card.type_value(2)
+                if card.points == self.maxPoints:
+                    self.maxPoints = 0
+                    for card_self in self.cards:
+                        if card_self.points > self.maxPoints:
+                            self.maxPoints = card_self.points
 
-            if card.colors == "Red":
-                self.red -= 1
-            elif card.colors == "Green":
-                self.green -= 1
-            elif card.colors == "Blue":
-                self.blue -= 1
-            elif card.colors == "Yellow":
-                self.yellow -= 1
+                if card.type_value(2) == self.maxType:
+                    self.maxType = 0
+                    for card_self in self.cards:
+                        if card_self.type_value(2) > self.maxType:
+                            self.maxType = card_self.type_value(2)
+
+                if card.colors == "Red":
+                    self.red -= 1
+                elif card.colors == "Green":
+                    self.green -= 1
+                elif card.colors == "Blue":
+                    self.blue -= 1
+                elif card.colors == "Yellow":
+                    self.yellow -= 1
+
+                break
+        if not card_found:
+            print("Card never found")
 
     def card_amount(self):
         return self.amount
