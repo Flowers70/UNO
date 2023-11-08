@@ -2,60 +2,49 @@ import Uno_Card
 
 
 def is_playable(face_up, player_hand):
-    # # Code to determine what cards are playable based on
-    # # an inputted hand - returns a hand of playable cards
-    # playable_cards = Uno_Card.Hand()  # create a new hand object
-    # colorMatch = False  # can only play draw4 when colors don't match
-    # count = 0  # num of playable cards
-    # for card in player_hand.cards:
-    #     if card.colors == face_up.colors:  # card in hand is same color as face-up card
-    #         colorMatch = True  # when this is true, draw4 cards can't be played
-    #         playable_cards.add_card(card)
-    #         count += 1
-    #         continue
-    #     if card.type == face_up.type:  # same type of card
-    #         if card.type != 'Normal':  # special card
-    #             playable_cards.add_card(card)
-    #             count += 1
-    #             continue
-    #
-    #         else:  # normal card
-    #             if card.points == face_up.points:  # same number
-    #                 playable_cards.add_card(card)
-    #                 count += 1
-    #                 continue
-    #
-    #     if card.type == 'Wild':  # wild cards are always playable
-    #         playable_cards.add_card(card)
-    #         count += 1
-    #         continue
-    #
-    #     else:  # this card doesn't match the discard
-    #         continue
-    #
-    # if colorMatch is False or count == 0:  # can play draw4
-    #     for card in player_hand.cards:  # search hand for draw4
-    #         if card.type == 'Draw4':
-    #             playable_cards.add_card(card)
-    #             count += 1
-    # # if count == 0:  # no playable cards in hand
-    # #     print("Draw a card")
-    # # print("num of playable cards:", count)
-    # # for card in playable_cards.cards:
-    # #     print("playable:", end="")
-    # #     print(card.colors, card.type, card.points, end=", ")
-    # # print()
-    # return playable_cards
     # Code to determine what cards are playable based on
     # an inputted hand - returns a hand of playable cards
-    playable_cards = Uno_Card.Hand()
+    playable_cards = Uno_Card.Hand()  # create a new hand object
+    colorMatch = False  # can only play draw4 when colors don't match
+    count = 0  # num of playable cards
     for card in player_hand.cards:
-        if (card.colors == face_up.colors or
-                card.type == face_up.type and card.points == face_up.points or
-                card.type == "Wild" or card.type == "Draw4" or
-                face_up.colors == "Wild"):
+        if card.colors == face_up.colors:  # card in hand is same color as face-up card
+            colorMatch = True  # when this is true, draw4 cards can't be played
             playable_cards.add_card(card)
+            count += 1
+            continue
+        if card.type == face_up.type:  # same type of card
+            if card.type != 'Normal':  # special card
+                playable_cards.add_card(card)
+                count += 1
+                continue
 
+            else:  # normal card
+                if card.points == face_up.points:  # same number
+                    playable_cards.add_card(card)
+                    count += 1
+                    continue
+
+        if card.type == 'Wild':  # wild cards are always playable
+            playable_cards.add_card(card)
+            count += 1
+            continue
+
+        else:  # this card doesn't match the discard
+            continue
+
+    if colorMatch is False or count == 0:  # can play draw4
+        for card in player_hand.cards:  # search hand for draw4
+            if card.type == 'Draw4':
+                playable_cards.add_card(card)
+                count += 1
+    # if count == 0:  # no playable cards in hand
+    #     print("Draw a card")
+    # print("num of playable cards:", count)
+    # for card in playable_cards.cards:
+    #     print("playable:", end="")
+    #     print(card.colors, card.type, card.points, end=", ")
+    # print()
     return playable_cards
 
 
