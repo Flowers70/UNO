@@ -125,10 +125,6 @@ class MyGame(Pile_Actions.PileActions):
             # Put on top in draw order
             self.pull_to_top(card)
 
-        # # Flip up the top cards
-        # for i in range(C.TOP_PILE_1, C.TOP_PILE_7 + 1):
-        #     self.piles[i][-1].face_up()
-
 
 
     def on_draw(self):
