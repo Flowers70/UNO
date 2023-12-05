@@ -4,6 +4,7 @@ import Mouse_Actions
 import Constants as C
 import Game_Logic
 import Uno_Card
+import GameOver
 import time
 
 
@@ -59,8 +60,14 @@ class PileActions(Mouse_Actions.MouseActions):
         self.remove_card_from_pile(card, move_to_discard)
         self.piles[pile_index].append(card)
 
-        if len(self.cpu_hand.cards) == 0 or len(self.player_hand.cards) == 0:
+        if len(self.cpu_hand.cards) == 0:
             print("GAME OVER!")
+            view = GameOver.GameOverView(False)
+            self.window.show_view(view)
+        elif len(self.player_hand.cards) == 0:
+            print("GAME OVER!")
+            view = GameOver.GameOverView(True)
+            self.window.show_view(view)
 
         if move_to_discard and len(self.piles[C.BOTTOM_FACE_DOWN_PILE]) < 4:
             print("Draw Pile Less Than 4")

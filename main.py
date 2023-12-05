@@ -4,9 +4,10 @@ import arcade.gui
 import Constants as C
 import Uno_Card
 import Pile_Actions
+import GameOver
 
 
-class MyGame(Pile_Actions.PileActions):
+class MyGameView(Pile_Actions.PileActions):
     """ Main application class. """
 
     def __init__(self):
@@ -16,6 +17,8 @@ class MyGame(Pile_Actions.PileActions):
         self.background = None
 
     def setup(self):
+        # view = MyGameView()
+        self.window.show_view(self)
         """ Set up the game here. Call this function to restart the game. """
         # background image
         self.background = arcade.load_texture("venv/Lib/Uno_cards/background_pic.png")
@@ -143,8 +146,14 @@ class MyGame(Pile_Actions.PileActions):
 
 def main():
     """ Main function """
-    window = MyGame()
-    window.setup()
+    # window = MyGame()
+    # window.setup()
+    # arcade.run()
+
+    window = arcade.Window(C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.SCREEN_TITLE)
+    start_view = MyGameView()
+    window.show_view(start_view)
+    start_view.setup()
     arcade.run()
 
 

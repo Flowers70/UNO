@@ -7,10 +7,12 @@ import random
 import Game_Logic
 
 
-class MouseActions(arcade.Window):
+# Changed arcade.Window -> arcade.View
+class MouseActions(arcade.View):
 
     def __init__(self):
-        super().__init__(C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.SCREEN_TITLE)
+        # Removed: C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.SCREEN_TITLE
+        super().__init__()
         # Sprite list with all the cards, no matter what pile they are in.
         self.card_list: Optional[arcade.SpriteList] = None
         self.player_turn = True
@@ -170,6 +172,7 @@ class MouseActions(arcade.Window):
         """ User presses key """
         if symbol == arcade.key.R:
             # Restart
+            print("Restart")
             self.setup()
 
     def draw_card(self, player_hand=True, forced_draw=False):
