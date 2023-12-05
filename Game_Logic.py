@@ -25,7 +25,7 @@ def is_playable(face_up, player_hand):
                     count += 1
                     continue
 
-        if card.type == 'Wild':  # wild cards are always playable
+        if card.type == 'Wild' or face_up.colors == 'Wild':  # wild cards are always playable
             playable_cards.add_card(card)
             count += 1
             continue
