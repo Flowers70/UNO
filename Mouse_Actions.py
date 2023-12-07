@@ -1,10 +1,13 @@
 from typing import Optional
 
 import arcade
+import arcade.gui
 import Uno_Card
 import Constants as C
 import random
 import Game_Logic
+
+import threading
 
 
 # Changed arcade.Window -> arcade.View
@@ -13,6 +16,125 @@ class MouseActions(arcade.View):
     def __init__(self):
         # Removed: C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.SCREEN_TITLE
         super().__init__()
+
+        # NEW CODE (Dec. 7)
+        self.background = None
+        self.color_chosen = threading.Event()
+        self.uno_button_pressed = False  # has player pushed the uno button before going out?
+        # Create the buttons from https://api.arcade.academy/en/latest/examples/gui_flat_button.html
+        # UNO Button
+        self.uno_manager = arcade.gui.UIManager()
+        self.uno_manager.enable()
+        uno_style = {
+            "font_name": "copperplate",
+            "font_size": 20,
+            "font_color": arcade.color.AMBER,  # yellow
+            "border_width": 0,
+            "border_color": "none",
+            "bg_color": (227, 38, 54),
+
+            # used if button is pressed
+            "bg_color_pressed": arcade.color.BLACK,
+            # "border_color_pressed": arcade.color.WHITE,  # also used when hovered
+            "font_color_pressed": arcade.color.WHITE,
+        }
+
+        # UNO Button
+        self.uno_box = arcade.gui.UIBoxLayout()
+        UNO_button = arcade.gui.UIFlatButton(text="UNO!", width=100, style=uno_style)
+        self.uno_box.add(UNO_button.with_space_around(bottom=20))
+        UNO_button.on_click = self.on_click_UNO
+        self.uno_manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="right",
+                anchor_y="bottom",
+                child=self.uno_box)
+        )
+        self.wild_right_manager = arcade.gui.UIManager()
+        self.wild_right_manager.enable()
+        self.wild_left_manager = arcade.gui.UIManager()
+        self.wild_left_manager.enable()
+        wild_green_style = {
+            "font_name": "copperplate",
+            "font_size": 25,
+            "font_color": arcade.color.WHITE,
+            "border_width": 0,
+            "border_color": "none",
+            "bg_color": (39, 174, 73),
+
+            # used if button is pressed
+            "bg_color_pressed": arcade.color.WHITE,
+            # "border_color_pressed": arcade.color.WHITE,  # also used when hovered
+            "font_color_pressed": arcade.color.BLACK,
+        }
+        wild_red_style = {
+            "font_name": "copperplate",
+            "font_size": 25,
+            "font_color": arcade.color.WHITE,
+            "border_width": 0,
+            "border_color": "none",
+            "bg_color": (250, 88, 83),
+
+            # used if button is pressed
+            "bg_color_pressed": arcade.color.WHITE,
+            # "border_color_pressed": arcade.color.WHITE,  # also used when hovered
+            "font_color_pressed": arcade.color.BLACK,
+        }
+        wild_yellow_style = {
+            "font_name": "copperplate",
+            "font_size": 25,
+            "font_color": arcade.color.WHITE,
+            "border_width": 0,
+            "border_color": "none",
+            "bg_color": (253, 170, 0),
+
+            # used if button is pressed
+            "bg_color_pressed": arcade.color.WHITE,
+            # "border_color_pressed": arcade.color.WHITE,  # also used when hovered
+            "font_color_pressed": arcade.color.BLACK,
+        }
+        wild_blue_style = {
+            "font_name": "copperplate",
+            "font_size": 25,
+            "font_color": arcade.color.WHITE,
+            "border_width": 0,
+            "border_color": "none",
+            "bg_color": (83, 86, 250),
+
+            # used if button is pressed
+            "bg_color_pressed": arcade.color.WHITE,
+            # "border_color_pressed": arcade.color.WHITE,  # also used when hovered
+            "font_color_pressed": arcade.color.BLACK,
+        }
+        self.wild_left_box = arcade.gui.UIBoxLayout()
+        self.wild_right_box = arcade.gui.UIBoxLayout()
+        wild_green_button = arcade.gui.UIFlatButton(text="Green", width=200, height=100, style=wild_green_style)
+        wild_red_button = arcade.gui.UIFlatButton(text="Red", width=200, height=100, style=wild_red_style)
+        wild_yellow_button = arcade.gui.UIFlatButton(text="Yellow", width=200, height=100, style=wild_yellow_style)
+        wild_blue_button = arcade.gui.UIFlatButton(text="Blue", width=200, height=100, style=wild_blue_style)
+        self.wild_left_box.add(wild_green_button.with_space_around(bottom=20))
+        self.wild_left_box.add(wild_red_button.with_space_around(bottom=20))
+        self.wild_right_box.add(wild_yellow_button.with_space_around(bottom=20))
+        self.wild_right_box.add(wild_blue_button.with_space_around(bottom=20))
+        wild_green_button.on_click = self.on_click_wild_green
+        wild_red_button.on_click = self.on_click_wild_red
+        wild_yellow_button.on_click = self.on_click_wild_yellow
+        wild_blue_button.on_click = self.on_click_wild_blue
+        self.wild_right_manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="right",
+                anchor_y="center_y",
+                child=self.wild_right_box)
+        )
+        self.wild_left_manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="left",
+                anchor_y="center_y",
+                child=self.wild_left_box)
+        )
+
+        # -------------------------
+
         # Sprite list with all the cards, no matter what pile they are in.
         self.card_list: Optional[arcade.SpriteList] = None
         self.player_turn = True
@@ -30,6 +152,61 @@ class MouseActions(arcade.View):
 
         # Players' hand (contains all cards in player's hand)
         self.player_hand = Uno_Card.Hand()
+
+    # NEW CODE (Dec. 7)
+    def on_click_wild_green(self, event):
+        print("green BUTTON:")
+        temp_list = self.piles[C.DISCARD_PILE].copy()
+        print(temp_list[-1].colors)
+        if temp_list[-1].colors == "Wild":
+            temp_list[-1].colors = "Green"
+        print(temp_list[-1].colors)
+        # self.wild_left_manager.clear()
+        # self.wild_right_manager.clear()
+        self.color_chosen.set()
+
+    def on_click_wild_red(self, event):
+        print("red BUTTON")
+        temp_list = self.piles[C.DISCARD_PILE].copy()
+        print(temp_list[-1].colors)
+        if temp_list[-1].colors == "Wild":
+            temp_list[-1].colors = "Red"
+        print(temp_list[-1].colors)
+        # self.wild_left_manager.clear()
+        # self.wild_right_manager.clear()
+        self.color_chosen.set()
+
+
+    def on_click_wild_yellow(self, event):
+        print("yellow BUTTON")
+        temp_list = self.piles[C.DISCARD_PILE].copy()
+        print(temp_list[-1].colors)
+        if temp_list[-1].colors == "Wild":
+            temp_list[-1].colors = "Yellow"
+        print(temp_list[-1].colors)
+        # self.wild_left_manager.clear()
+        # self.wild_right_manager.clear()
+        self.color_chosen.set()
+
+    def on_click_wild_blue(self, event):
+        print("blue BUTTON")
+        temp_list = self.piles[C.DISCARD_PILE].copy()
+        print(temp_list[-1].colors)
+        if temp_list[-1].colors == "Wild":
+            temp_list[-1].colors = "Blue"
+        print(temp_list[-1].colors)
+        # self.wild_left_manager.clear()
+        # self.wild_right_manager.clear()
+        self.color_chosen.set()
+
+    # UNO
+    def on_click_UNO(self, event):
+        print("UNO BUTTON:", self.player_hand.amount)
+        if len(self.player_hand.cards) > 1:
+            for i in range(2):
+                self.draw_card(self.player_turn, True)
+        elif len(self.player_hand.cards) == 1:
+            self.uno_button_pressed = True
 
     def pull_to_top(self, card: arcade.Sprite):
         """ Pull card to top of rendering order (last to render, looks on-top) """

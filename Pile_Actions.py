@@ -1,11 +1,12 @@
 import arcade
+import arcade.gui
 
 import Mouse_Actions
 import Constants as C
 import Game_Logic
 import Uno_Card
 import GameOver
-import time
+import threading
 
 
 class PileActions(Mouse_Actions.MouseActions):
@@ -60,20 +61,32 @@ class PileActions(Mouse_Actions.MouseActions):
         self.remove_card_from_pile(card, move_to_discard)
         self.piles[pile_index].append(card)
 
+        # # NEW CODE
+        if self.uno_button_pressed is True and len(self.player_hand.cards) > 1:
+            self.uno_button_pressed = False
+
         if len(self.cpu_hand.cards) == 0:
             print("GAME OVER!")
             view = GameOver.GameOverView(False)
             self.window.show_view(view)
         elif len(self.player_hand.cards) == 0:
-            print("GAME OVER!")
-            view = GameOver.GameOverView(True)
-            self.window.show_view(view)
+            # NEW CODE
+            print("UNO", self.uno_button_pressed)
+            if self.uno_button_pressed is True:
+                # Old Code
+                print("GAME OVER!")
+                view = GameOver.GameOverView(True)
+                self.window.show_view(view)
+            # else: # NEW CODE
+            #     print("UNO button not pressed before going out")
+            #     for i in range(2):
+            #         self.draw_card(self.player_turn, True)
 
         if move_to_discard and len(self.piles[C.BOTTOM_FACE_DOWN_PILE]) < 4:
             print("Draw Pile Less Than 4")
             self.reuse_cards()
 
-        if not self.player_turn and pile_index == C.DISCARD_PILE:
+        if not self.player_turn and pile_index == C.DISCARD_PILE and self.color_chosen:
             self.cpu_play(cpu_continuous_plays)
             return cpu_continuous_plays
         else:
@@ -90,7 +103,21 @@ class PileActions(Mouse_Actions.MouseActions):
             # Move position of card to pile
             card = self.held_cards[0]
             if card.colors == "Wild":
-                card.colors = input("Choose color: ")
+                self.wild_right_manager.enable()
+                self.wild_left_manager.enable()
+                if card.type == "Wild":
+                    card.colors = input("Choose color: ")
+                # # color_chosen_event = threading.Event()
+                # functions = [self.on_click_wild_blue, self.on_click_wild_green,
+                #              self.on_click_wild_red, self.on_click_wild_yellow]
+                # threads = [threading.Thread(target=func) for func in functions]
+                #
+                # for thread in threads:
+                #     thread.start()
+                #
+                # for func in functions:
+                #     self.color_chosen.wait()
+
             card.position = pile.position
             self.move_card_to_new_pile(card, pile_index)
             return False

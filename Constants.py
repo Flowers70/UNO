@@ -2,7 +2,7 @@
 # Screen title and size
 SCREEN_WIDTH = 850 # was 1024
 SCREEN_HEIGHT = 600 # was 768
-SCREEN_TITLE = "Drag and Drop Cards"
+SCREEN_TITLE = "UNO!"
 
 # Constants for sizing
 CARD_SCALE = 0.6

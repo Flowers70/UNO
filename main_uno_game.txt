@@ -16,6 +16,26 @@ class MyGameView(Pile_Actions.PileActions):
 
         self.background = None
 
+        # Button code
+        # --- Required for all code that uses UI element,
+        # a UIManager to handle the UI.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the buttons
+        start_button = arcade.gui.UIFlatButton(text="Start Game", width=200)
+        self.v_box.add(start_button.with_space_around(bottom=200))
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.v_box)
+        )
 
     def setup(self):
         # view = MyGameView()
@@ -145,10 +165,8 @@ class MyGameView(Pile_Actions.PileActions):
         # Draw the cards
         self.card_list.draw()
 
-        # NEW CODE (Dec. 7)
-        self.uno_manager.draw()
-        self.wild_left_manager.draw()
-        self.wild_right_manager.draw()
+        # Draw buttons
+        self.manager.draw()
 
 def main():
     """ Main function """
